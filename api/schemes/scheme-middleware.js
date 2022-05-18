@@ -29,7 +29,20 @@ const checkSchemeId = async (req, res, next) => {
     "message": "invalid scheme_name"
   }
 */
-const validateScheme = (req, res, next) => {};
+const validateScheme = (req, res, next) => {
+  if (
+    req.body.scheme_name === undefined ||
+    typeof req.body.scheme_name !== "string" ||
+    !req.body.scheme_name.trim()
+  ) {
+    next({
+      status: 400,
+      message: "invalid scheme_name",
+    });
+  } else {
+    next();
+  }
+};
 
 /*
   If `instructions` is missing, empty string or not a string, or
