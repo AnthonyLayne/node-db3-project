@@ -6,6 +6,7 @@ function find() {
     .select("sc.*")
     .count("st.step_id as number_of_steps")
     .groupBy("sc.scheme_id");
+
   // EXERCISE A
   /*
     1A- Study the SQL query below running it in SQLite Studio against `data/schemes.db3`.
@@ -29,7 +30,7 @@ async function findById(scheme_id) {
   const rows = await db("schemes as sc")
     .leftJoin("steps as st", "sc.scheme_id", "st.scheme_id")
     .where("sc.scheme_id", scheme_id)
-    .select("sc.*", "sc.scheme_name", "sc.scheme_id")
+    .select("st.*", "sc.scheme_name", "sc.scheme_id")
     .orderBy("st.step_number");
 
   const result = {
@@ -42,7 +43,7 @@ async function findById(scheme_id) {
     if (row.step_id) {
       result.steps.push({
         step_id: row.step_id,
-        step_name: row.step_name,
+        step_number: row.step_number,
         instructions: row.instructions,
       });
     }
@@ -166,6 +167,18 @@ function add(scheme) {
 }
 
 function addStep(scheme_id, step) {
+  return db("steps")
+    .insert({
+      ...step,
+      scheme_id,
+    })
+    .then(() => {
+      return db("steps")
+        .join("schemes", "schemes.scheme_id", "steps.scheme_id")
+        .select("step_id", "step_number", "instructions", "scheme_name")
+        .orderBy("step_number")
+        .where("schemes.scheme_id", scheme_id);
+    });
   // EXERCISE E
   /*
     1E- This function adds a step to the scheme with the given `scheme_id`
